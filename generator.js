@@ -1,3 +1,5 @@
+const { resolve } = require('path');
+
 // 生成器如何解决异步编程yield
 function * read(){ // 生成的是迭代器
     yield 1;
@@ -23,6 +25,28 @@ let {value} = its.next()
 value.then(res=>{
     let {value} = its.next(res)
     value.then(res=>{
-        console.log(res)
+        console.log('===='+res)
     })
+})
+
+function co(it){
+    return new Promise((resolve,reject)=>{
+        function next(val){
+            let {value,done} = it.next(val)
+            if (done) {
+                resolve(value)
+            } else {
+                Promise.resolve(value).then(res=>{
+                    next(res)
+                },reason=>{
+                    reject(reason)
+                })
+            }
+        }
+        next()
+    })
+}
+
+co(see()).then(res=>{
+    console.log(res)
 })
